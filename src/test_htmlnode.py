@@ -34,7 +34,7 @@ class TestHtmlNode(unittest.TestCase):
         self.assertIsNone(node.props)
 
     def test_init_with_props(self):
-        props = {"class": "\"my-class\"", "id": "\"my-id\""}
+        props = {"class": "my-class", "id": "my-id"}
         node = HtmlNode("div", props=props)
         self.assertEqual(node.tag, "div")
         self.assertIsNone(node.value)
@@ -46,7 +46,7 @@ class TestHtmlNode(unittest.TestCase):
         self.assertEqual(node.props_to_html(), "")
 
     def test_props_to_html(self):
-        props = {"class": "\"my-class\"", "id": "\"my-id\""}
+        props = {"class": "my-class", "id": "my-id"}
         node = HtmlNode(props=props)
         self.assertEqual(node.props_to_html(),
                          " class=\"my-class\" id=\"my-id\"")
@@ -57,11 +57,11 @@ class TestHtmlNode(unittest.TestCase):
             node.to_html()
 
     def test_repr(self):
-        props = {"class": "\"my-class\""}
+        props = {"class": "my-class"}
         child = HtmlNode("p", "child")
         node = HtmlNode("div", "parent", [child], props)
         self.assertEqual(repr(
-            node), "HtmlNode(div, parent, [HtmlNode(p, child, None, None)], {'class': '\"my-class\"'})")
+            node), "HtmlNode(div, parent, [HtmlNode(p, child, None, None)], {'class': 'my-class'})")
 
 
 if __name__ == "__main__":
