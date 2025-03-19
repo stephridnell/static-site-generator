@@ -1,7 +1,8 @@
 import unittest
 
 from textnode import TextNode, TextType
-from util import split_nodes_delimiter
+from util import (extract_markdown_images, extract_markdown_links,
+                  split_nodes_delimiter)
 
 
 class TestUtil(unittest.TestCase):
@@ -102,6 +103,55 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].text, "italic and bold")
         self.assertEqual(nodes[0].text_type, TextType.BOLD)
+
+    def test_extract_markdown_links_single(self):
+        text = "This is a [link](https://www.boot.dev) in text"
+        links = extract_markdown_links(text)
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0], ("link", "https://www.boot.dev"))
+
+    def test_extract_markdown_links_multiple(self):
+        text = "[link1](url1) and [link2](url2)"
+        links = extract_markdown_links(text)
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0], ("link1", "url1"))
+        self.assertEqual(links[1], ("link2", "url2"))
+
+    def test_extract_markdown_links_none(self):
+        text = "This text has no links"
+        links = extract_markdown_links(text)
+        self.assertEqual(len(links), 0)
+
+    def test_extract_markdown_links_with_image(self):
+        text = "![image](img.jpg) and [link](url)"
+        links = extract_markdown_links(text)
+        self.assertEqual(len(links), 1)
+        self.assertEqual(links[0], ("link", "url"))
+
+    def test_extract_markdown_images_single(self):
+        text = "This is an ![image](https://i.imgur.com/zjjcJKZ.png) in text"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 1)
+        self.assertEqual(
+            images[0], ("image", "https://i.imgur.com/zjjcJKZ.png"))
+
+    def test_extract_markdown_images_multiple(self):
+        text = "![img1](url1.jpg) and ![img2](url2.png)"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0], ("img1", "url1.jpg"))
+        self.assertEqual(images[1], ("img2", "url2.png"))
+
+    def test_extract_markdown_images_none(self):
+        text = "This text has no images"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 0)
+
+    def test_extract_markdown_images_with_link(self):
+        text = "[link](url) and ![image](img.jpg)"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0], ("image", "img.jpg"))
 
 
 if __name__ == "__main__":
