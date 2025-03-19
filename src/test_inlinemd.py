@@ -1,8 +1,9 @@
 import unittest
 
+from inlinemd import (extract_markdown_images, extract_markdown_links,
+                      split_nodes_delimiter, split_nodes_image,
+                      split_nodes_link)
 from textnode import TextNode, TextType
-from util import (extract_markdown_images, extract_markdown_links,
-                  split_nodes_delimiter)
 
 
 class TestUtil(unittest.TestCase):
@@ -152,6 +153,73 @@ class TestUtil(unittest.TestCase):
         images = extract_markdown_images(text)
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0], ("image", "img.jpg"))
+
+    def test_split_nodes_image_single(self):
+        node = TextNode(
+            "This is an ![image](https://example.com/img.jpg) in text", TextType.TEXT)
+        nodes = split_nodes_image([node])
+        self.assertEqual(len(nodes), 3)
+        self.assertEqual(nodes[0].text, "This is an ")
+        self.assertEqual(nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(nodes[1].text, "image")
+        self.assertEqual(nodes[1].text_type, TextType.IMAGE)
+        self.assertEqual(nodes[1].url, "https://example.com/img.jpg")
+        self.assertEqual(nodes[2].text, " in text")
+        self.assertEqual(nodes[2].text_type, TextType.TEXT)
+
+    def test_split_nodes_image_multiple(self):
+        node = TextNode(
+            "![img1](url1.jpg) and ![img2](url2.jpg)", TextType.TEXT)
+        nodes = split_nodes_image([node])
+        self.assertEqual(len(nodes), 3)
+        self.assertEqual(nodes[0].text, "img1")
+        self.assertEqual(nodes[0].text_type, TextType.IMAGE)
+        self.assertEqual(nodes[0].url, "url1.jpg")
+        self.assertEqual(nodes[1].text, " and ")
+        self.assertEqual(nodes[1].text_type, TextType.TEXT)
+        self.assertEqual(nodes[2].text, "img2")
+        self.assertEqual(nodes[2].text_type, TextType.IMAGE)
+        self.assertEqual(nodes[2].url, "url2.jpg")
+
+    def test_split_nodes_image_non_text_node(self):
+        node = TextNode("![img](url.jpg)", TextType.BOLD)
+        nodes = split_nodes_image([node])
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].text, "![img](url.jpg)")
+        self.assertEqual(nodes[0].text_type, TextType.BOLD)
+
+    def test_split_nodes_link_single(self):
+        node = TextNode(
+            "This is a [link](https://example.com) in text", TextType.TEXT)
+        nodes = split_nodes_link([node])
+        self.assertEqual(len(nodes), 3)
+        self.assertEqual(nodes[0].text, "This is a ")
+        self.assertEqual(nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(nodes[1].text, "link")
+        self.assertEqual(nodes[1].text_type, TextType.LINK)
+        self.assertEqual(nodes[1].url, "https://example.com")
+        self.assertEqual(nodes[2].text, " in text")
+        self.assertEqual(nodes[2].text_type, TextType.TEXT)
+
+    def test_split_nodes_link_multiple(self):
+        node = TextNode("[link1](url1) and [link2](url2)", TextType.TEXT)
+        nodes = split_nodes_link([node])
+        self.assertEqual(len(nodes), 3)
+        self.assertEqual(nodes[0].text, "link1")
+        self.assertEqual(nodes[0].text_type, TextType.LINK)
+        self.assertEqual(nodes[0].url, "url1")
+        self.assertEqual(nodes[1].text, " and ")
+        self.assertEqual(nodes[1].text_type, TextType.TEXT)
+        self.assertEqual(nodes[2].text, "link2")
+        self.assertEqual(nodes[2].text_type, TextType.LINK)
+        self.assertEqual(nodes[2].url, "url2")
+
+    def test_split_nodes_link_non_text_node(self):
+        node = TextNode("[link](url)", TextType.BOLD)
+        nodes = split_nodes_link([node])
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].text, "[link](url)")
+        self.assertEqual(nodes[0].text_type, TextType.BOLD)
 
 
 if __name__ == "__main__":
