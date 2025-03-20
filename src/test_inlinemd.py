@@ -6,7 +6,7 @@ from inlinemd import (extract_markdown_images, extract_markdown_links,
 from textnode import TextNode, TextType
 
 
-class TestUtil(unittest.TestCase):
+class TestInlineMd(unittest.TestCase):
     def test_split_nodes_delimiter_text(self):
         node = TextNode("Hello **world**", TextType.TEXT)
         nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
