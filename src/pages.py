@@ -29,7 +29,7 @@ def extract_title(markdown_text: str) -> str:
     raise ValueError("No h1 header found in markdown file")
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(from_path: str, template_path: str, dest_path: str, base_path: str) -> None:
     print(
         f"Generating page from {from_path} to {dest_path} using template: {template_path}")
 
@@ -52,9 +52,33 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     html_doc = template.replace("{{ Title }}", title).replace(
         "{{ Content }}", html_content)
 
+    # Replace base path in href and src attributes
+    html_doc = html_doc.replace(
+        'href="/', f'href="{base_path}').replace('src="/', f'src="{base_path}')
+
     # Create destination directory if it doesn't exist
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
     # Write the output file
     with open(dest_path, 'w') as f:
         f.write(html_doc)
+
+
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str, base_path: str) -> None:
+    for item in os.listdir(dir_path_content):
+        content_path = os.path.join(dir_path_content, item)
+
+        if os.path.isdir(content_path):
+            # Recursively process subdirectories
+            dest_subdir = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(
+                content_path, template_path, dest_subdir, base_path)
+
+        elif content_path.endswith('.md'):
+            # Generate HTML for markdown files
+            rel_path = os.path.relpath(content_path, dir_path_content)
+            dest_path = os.path.join(
+                dest_dir_path, rel_path.replace('.md', '.html'))
+
+            # Create the HTML page
+            generate_page(content_path, template_path, dest_path, base_path)
