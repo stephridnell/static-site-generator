@@ -2,7 +2,7 @@ import os
 import shutil
 
 
-def copy_directory(src, dst):
+def copy_directory(src: str, dst: str) -> None:
     if os.path.exists(dst):
         shutil.rmtree(dst)
 
@@ -17,3 +17,11 @@ def copy_directory(src, dst):
 
         else:
             shutil.copy(src_path, dst_path)
+
+
+def extract_title(markdown_text: str) -> str:
+    lines = markdown_text.split("\n")
+    for line in lines:
+        if line.startswith("# "):
+            return line.lstrip("# ").strip()
+    raise ValueError("No h1 header found in markdown file")
